@@ -169,6 +169,8 @@ class Player(pg.sprite.Sprite):
 
         self.charge_power = 0
 
+        self.hp = 200
+
 
         self.charge_mode = False
         self.magic_balls = pg.sprite.Group()
@@ -383,6 +385,12 @@ class Game:
         self.enemy.update(self.player)
         self.enemy.magic_balls.update()
 
+        # Попадания файербола в противника
+        hits = pg.sprite.spritecollide(self.enemy, self.player.magic_balls, True, pg.sprite.collide_rect_ratio(0.3))
+        for hit in hits:
+            self.enemy.hp -= hit.power
+
+
     def draw(self):
         # Отрисовка интерфейса
         self.screen.blit(self.background, (0, 0))
@@ -394,6 +402,13 @@ class Game:
         # Magic ball
         self.player.magic_balls.draw(self.screen)
         self.enemy.magic_balls.draw(self.screen)
+
+        # Отрисовка полосок здоровья
+        pg.draw.rect(self.screen, 'green', (10, 10, self.player.hp, 20))
+        pg.draw.rect(self.screen, 'black', (10, 10, 100 * 2, 20), 2)
+
+        pg.draw.rect(self.screen, 'green', (SCREEN_WIDTH - 210, 10, self.enemy.hp, 20))
+        pg.draw.rect(self.screen, 'black', (SCREEN_WIDTH - 210, 10, 100 * 2, 20), 2)
 
         # передний план
         self.screen.blit(self.foreground, (0, 0))
