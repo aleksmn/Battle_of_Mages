@@ -412,7 +412,7 @@ class Game:
 
     def update(self):
         if self.win is None:
-            self.enemy.update()
+            self.enemy.update(player=self.player)
             self.player.update()
 
             self.enemy.magic_balls.update()
