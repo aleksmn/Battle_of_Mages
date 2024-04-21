@@ -26,6 +26,99 @@ def text_render(text):
     return font.render(str(text), True, "black")
 
 
+# Создаем класс игрока
+class Player(pg.sprite.Sprite):
+    def __init__(self):
+        # вызываем конструктор родительского класса
+        super().__init__()
+
+        self.load_animations()
+
+        self.animation_mode = True
+        self.charge_mode = False
+        self.attack_mode = False
+
+        self.timer = pg.time.get_ticks()
+        self.interval = 300
+
+        self.image = self.idle_animation_right[0]
+        self.current_image = 0
+        self.current_animation = self.idle_animation_right
+
+        self.rect = self.image.get_rect()
+        self.rect.center = (100, SCREEN_HEIGHT // 2)
+
+        self.side = "right"
+
+
+
+    def load_animations(self):
+        # Персонаж стоит и смотрит вправо
+        self.idle_animation_right = []
+        for i in range(1, 4):
+            self.idle_animation_right.append(load_image(f"images/fire wizard/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT))
+        # Смотрит влево
+        self.idle_animation_left = []
+        for image in self.idle_animation_right:
+            self.idle_animation_left.append(pg.transform.flip(image, True, False))
+
+        # Анимация движения вправо
+        self.move_animation_right = []
+        for i in range(1, 5):
+            self.move_animation_right.append(load_image(f"images/fire wizard/move{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT))
+
+        # Анимация движения влево
+        self.move_animation_left = []
+        for image in self.move_animation_right:
+            self.move_animation_left.append(pg.transform.flip(image, True, False))
+
+
+
+    def update(self):
+        # Перемещение
+        direction = 0
+        keys = pg.key.get_pressed()
+
+        if keys[pg.K_a]:
+            direction = -1
+            self.side = "left"
+        elif keys[pg.K_d]:
+            direction = 1
+            self.side = "right"
+
+        # Анимация персонажа
+        self.handle_animation()
+
+        # Движение
+        self.handle_movement(direction, keys)        
+
+
+    def handle_animation(self):
+
+        if self.animation_mode and not self.attack_mode:
+            if pg.time.get_ticks() - self.timer > self.interval:
+                # переключаем анимацию на следующий кадр
+                self.current_image += 1 
+
+                if self.current_image >= len(self.current_animation):
+                    self.current_image = 0
+                self.image = self.current_animation[self.current_image]
+                self.timer = pg.time.get_ticks()
+
+
+    def handle_movement(self, direction, keys):
+        if self.attack_mode:
+            return
+        
+        if direction != 0:
+            self.animation_mode = True
+            self.charge_mode = False
+            self.rect.x += direction
+            # self.current_animation = 
+
+
+
+
 
 
 # Создаем класс для игры
@@ -40,7 +133,7 @@ class Game:
         self.foreground = load_image("images/foreground.png", SCREEN_WIDTH, SCREEN_HEIGHT)
 
         # Создаем объекты игроков
-        # ....
+        self.player = Player()
 
         # Запускаем игру
         self.clock = pg.time.Clock()
@@ -62,7 +155,7 @@ class Game:
 
 
     def update(self):
-        ...
+        self.player.update()
 
     
     def draw(self):
@@ -70,7 +163,8 @@ class Game:
 
 
         # Отрисовка персонажей
-        # ....
+        self.screen.blit(self.player.image, self.player.rect)
+        
 
 
         # передний план
