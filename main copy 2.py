@@ -26,11 +26,52 @@ def text_render(text):
     return font.render(str(text), True, "black")
 
 
+class MagicBall(pg.sprite.Sprite):
+    def __init__(self, coord, side, power, folder):
+        super().__init__()
+
+        self.side = side
+        self.power = power / 2
+
+        # folder - название персонажа
+        self.image = load_image(f"images/{folder}/magicball.png", 200, 150)
+
+        if self.side == "right":
+            self.image = pg.transform.flip(self.image, True, False)    
+
+        self.rect = self.image.get_rect()
+
+        self.rect.center = coord[0], coord[1] + 120
+
+    def update(self):
+        if self.side == "right":
+            self.rect.x += 4
+            if self.rect.left >= SCREEN_WIDTH:
+                self.kill()
+        else:
+            self.rect.x -= 4
+            if self.rect.left <= 0:
+                self.kill()
+
+
+class Enemy(pg.sprite.Sprite):
+    def __init__(self, folder):
+        super().__init__()
+
+        self.folder = folder
+        self.load_animations()
+
+
+
+
 # Создаем класс игрока
 class Player(pg.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, folder="fire wizard"):
         # вызываем конструктор родительского класса
         super().__init__()
+
+        self.folder = folder
+
 
         self.load_animations()
 
@@ -49,6 +90,14 @@ class Player(pg.sprite.Sprite):
         self.rect.center = (100, SCREEN_HEIGHT // 2)
 
         self.side = "right"
+
+
+        self.charge_power = 0
+        self.attack_interval = 500
+
+
+        self.magic_balls = pg.sprite.Group()
+
 
 
 
@@ -73,6 +122,20 @@ class Player(pg.sprite.Sprite):
             self.move_animation_left.append(pg.transform.flip(image, True, False))
 
 
+        # Приседания
+        self.down = [load_image(f"images/fire wizard/down.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.down.append(pg.transform.flip(self.down[0], True, False))
+
+        # Подготовка к атаке
+        self.charge = [load_image(f"images/fire wizard/charge.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.charge.append(pg.transform.flip(self.charge[0], True, False))
+
+        # Атака
+        self.attack = [load_image(f"images/fire wizard/attack.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.attack.append(pg.transform.flip(self.attack[0], True, False))
+
+
+
 
     def update(self):
         # Перемещение
@@ -90,7 +153,15 @@ class Player(pg.sprite.Sprite):
         self.handle_animation()
 
         # Движение
-        self.handle_movement(direction, keys)        
+        self.handle_movement(direction, keys)    
+
+        self.handle_attack_mode()
+
+    def handle_attack_mode(self):
+        if self.attack_mode:
+            if pg.time.get_ticks() - self.timer > self.attack_interval:
+                self.attack_mode = False
+                self.timer = pg.time.get_ticks()  
 
 
     def handle_animation(self):
@@ -106,6 +177,26 @@ class Player(pg.sprite.Sprite):
                 self.timer = pg.time.get_ticks()
 
 
+        if self.charge_mode:
+            self.charge_power += 1
+            print(self.charge_power)
+            if self.charge_power == 100:
+                self.attack_mode = True
+
+
+        if self.attack_mode and self.charge_power > 0:
+            print("FIREBALL!!!!")
+
+            fireball_position = self.rect.topright if self.side == "right" else self.rect.topleft
+
+            self.magic_balls.add(MagicBall(fireball_position, self.side, self.charge_power, self.folder))
+
+            self.charge_power = 0
+            self.charge_mode = False
+            self.image = self.attack[self.side != "right"]
+            self.timer = pg.time.get_ticks()
+
+
     def handle_movement(self, direction, keys):
         if self.attack_mode:
             return
@@ -114,11 +205,32 @@ class Player(pg.sprite.Sprite):
             self.animation_mode = True
             self.charge_mode = False
             self.rect.x += direction
-            # self.current_animation = 
+            # Тернарный оператор
+            self.current_animation = self.move_animation_left if direction == -1 else self.move_animation_right
+
+        elif keys[pg.K_s]:
+            self.animation_mode = False
+            self.charge_mode = False
+            self.image = self.down[self.side != "right"]
+
+        elif keys[pg.K_SPACE]:
+            self.animation_mode = False
+            self.charge_mode = True
+            self.image = self.charge[self.side != "right"]
+
+        else:
+            self.animation_mode = True
+            self.charge_mode = False
+            # режим idle
+            self.current_animation = self.idle_animation_left if self.side == "left" else self.idle_animation_right
 
 
+        # Запрешаем выход за пределы экрана
+        if self.rect.right >= SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
 
-
+        elif self.rect.left <= 0:
+            self.rect.left = 0
 
 
 # Создаем класс для игры
@@ -157,6 +269,8 @@ class Game:
     def update(self):
         self.player.update()
 
+        self.player.magic_balls.update()
+
     
     def draw(self):
         self.screen.blit(self.background, (0, 0))
@@ -164,6 +278,12 @@ class Game:
 
         # Отрисовка персонажей
         self.screen.blit(self.player.image, self.player.rect)
+        # self.screen.blit(self.enemy.image, self.enemy.rect)
+
+
+        # Отрисовка файерболов
+        self.player.magic_balls.draw(self.screen)
+        # self.enemy.magic_balls.draw(self.screen)
         
 
 
