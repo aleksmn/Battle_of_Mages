@@ -35,7 +35,7 @@ class Enemy(pg.sprite.Sprite):
 
         self.hp = 200
 
-        self.image = self.idle_animation_right[0]
+        self.image = self.idle_animation_left[0]
         self.current_image = 0
         self.current_animation = self.idle_animation_left
 
@@ -107,6 +107,8 @@ class Enemy(pg.sprite.Sprite):
                 self.attack_mode = False
                 self.timer = pg.time.get_ticks()
 
+
+                
     def handle_movement(self):
         if self.attack_mode:
             return
@@ -130,6 +132,16 @@ class Enemy(pg.sprite.Sprite):
             self.rect.right = SCREEN_WIDTH
         elif self.rect.left <= 0:
             self.rect.left = 0
+
+
+
+
+
+
+
+
+
+
 
     def handle_animation(self):
         if self.animation_mode and not self.attack_mode:
