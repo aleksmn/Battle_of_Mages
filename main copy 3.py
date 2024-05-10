@@ -1,3 +1,4 @@
+# Дмитрий
 import random
 import pygame as pg
 
@@ -54,4 +55,28 @@ class Game:
             self.clock.tick(FPS)
 
 
-    
+    def event(self):
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                quit()
+
+
+    def update(self):
+        ...
+
+
+    def draw(self):
+        # Отрисовка интерфейса
+        self.screen.blit(self.background, (0, 0))
+
+        # Отрисовка персонажей
+
+        # передний план
+        self.screen.blit(self.foreground, (0, 0))
+        pg.display.flip()
+
+
+
+# Точка входа в программу
+if __name__ == "__main__":
+    Game()
