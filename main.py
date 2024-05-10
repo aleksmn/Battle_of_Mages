@@ -209,7 +209,7 @@ class Player(pg.sprite.Sprite):
         self.down = [load_image(f"images/{self.folder}/down.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
         self.down.append(pg.transform.flip(self.down[0], True, False))
 
-    def update(self):
+    def update(self, player=None):
         keys = pg.key.get_pressed()
         direction = 0
 
