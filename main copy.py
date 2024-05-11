@@ -135,14 +135,6 @@ class Enemy(pg.sprite.Sprite):
 
 
 
-
-
-
-
-
-
-
-
     def handle_animation(self):
         if self.animation_mode and not self.attack_mode:
             if pg.time.get_ticks() - self.timer > self.interval:
@@ -374,6 +366,8 @@ class Game:
         # Создаем объект Enemy
         self.enemy = Enemy(folder="earth monk")
 
+        self.win = None
+
 
         self.clock = pg.time.Clock()
         self.run()
@@ -390,7 +384,16 @@ class Game:
             if event.type == pg.QUIT:
                 quit()
 
+            if event.type == pg.KEYDOWN and self.win is not None:
+                quit()
+            
+
     def update(self):
+
+        if self.win is not None:
+            return
+
+
         self.player.update()
         self.player.magic_balls.update()
 
@@ -401,6 +404,22 @@ class Game:
         hits = pg.sprite.spritecollide(self.enemy, self.player.magic_balls, True, pg.sprite.collide_rect_ratio(0.3))
         for hit in hits:
             self.enemy.hp -= hit.power
+
+        # Попадания в игрока
+        if self.player.image not in self.player.down:
+            hits = pg.sprite.spritecollide(self.player, self.enemy.magic_balls, True, pg.sprite.collide_rect_ratio(0.3))
+
+            for hit in hits:
+                self.player.hp -= hit.power
+
+
+        # Проверка на победу
+        if self.player.hp <= 0:
+            self.win = self.enemy
+        elif self.enemy.hp <= 0:
+            self.win = self.player
+
+        
 
 
     def draw(self):
@@ -424,6 +443,15 @@ class Game:
 
         # передний план
         self.screen.blit(self.foreground, (0, 0))
+
+
+        # Сообщение о победе
+        if self.win == self.player:
+            text = text_render("Победил маг слева")
+            text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            self.screen.blit(text, text_rect)
+
+
         pg.display.flip()
 
 
