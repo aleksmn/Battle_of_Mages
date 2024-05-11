@@ -447,9 +447,15 @@ class Game:
 
         # Сообщение о победе
         if self.win == self.player:
-            text = text_render("Победил маг слева")
+            text = text_render(f"Победил маг слева")
             text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
             self.screen.blit(text, text_rect)
+
+        if self.win == self.enemy:
+            text = text_render(f"Победил маг справа")
+            text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            self.screen.blit(text, text_rect)
+            
 
 
         pg.display.flip()
