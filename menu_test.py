@@ -14,8 +14,8 @@ class Menu:
             title="Пример меню"
         )
 
-        self.menu.add.text_input('Name :', default='John Doe', onchange=self.set_name)
-        self.menu.add.selector('Difficulty :', [('Hard', 1), ('Easy', 2)], onchange=self.set_difficulty)
+        self.menu.add.text_input('Имя :', default='John Doe', onchange=self.set_name)
+        self.menu.add.selector('Сложность :', [('Hard', 1), ('Easy', 2)], onchange=self.set_difficulty)
         self.menu.add.label(title="Это ярлык")
         self.menu.add.button("Играть", self.start_game)
         self.menu.add.button("Выйти", self.quit_game)
