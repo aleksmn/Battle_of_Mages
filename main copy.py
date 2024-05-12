@@ -462,6 +462,42 @@ class Game:
 
 
 
+
+# Меню игры
+
+class Menu:
+    def __init__(self):
+        self.surface = pg.display.set_mode((900, 550))
+
+        self.menu = pygame_menu.Menu(
+            height=550,
+            width=900,
+            theme=pygame_menu.themes.THEME_SOLARIZED,
+            title='Меню',
+
+        )
+
+        self.menu.add.label(title="Режим на одного")
+        # селектор для выборо противника
+        self.menu.add.selector('Противник: ', [('Маг молний', 1), ('Монах земли', 2), ('Случайный', 3)], onchange=self.set_enemy)
+        # Начать одиночную игру
+        self.menu.add.button('Играть')
+
+
+        # Запуск
+        self.run()
+
+
+    def set_enemy(self, selected, value):
+        # выбор противника для одиночной игры
+        print(selected, value)
+
+
+
+    def run(self):
+        self.menu.mainloop(self.surface)
+
+
 # Точка входа в программу
 if __name__ == "__main__":
-    Game()
+    Menu()
