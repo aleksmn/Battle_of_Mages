@@ -24,6 +24,38 @@ def text_render(text):
     return font.render(str(text), True, "black")
 
 
+# Создадим класс персонажа игрока
+class Player(pg.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+
+        self.load_animations()
+
+        self.current_image = 0
+        self.current_animation = self.idle_animation_right
+
+        self.image = self.idle_animation_right[0]
+
+        self.rect = self.image.get_rect()
+        self.rect.center = (100, SCREEN_HEIGHT // 2)
+
+        self.timer = pg.time.get_ticks()
+        self.interval = 300
+        self.side = "right"
+        self.animation_mode = True
+        self.attack_mode = False
+        self.charge_mode = False
+
+
+
+    def load_animations(self):
+
+        self.idle_animation_right = []
+        for i in range(1, 4):
+            self.idle_animation_right.append(load_image(f"images/fire wizard/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT))
+
+
+
 
 
 
@@ -39,7 +71,7 @@ class Game:
         self.foreground = load_image("images/foreground.png", SCREEN_WIDTH, SCREEN_HEIGHT)
 
         # Создаем объект игрок
-        # self.player = Player()
+        self.player = Player()
 
 
         self.clock = pg.time.Clock()
@@ -70,6 +102,8 @@ class Game:
         self.screen.blit(self.background, (0, 0))
 
         # Отрисовка персонажей
+        self.screen.blit(self.player.image, self.player.rect)
+
 
         # передний план
         self.screen.blit(self.foreground, (0, 0))
