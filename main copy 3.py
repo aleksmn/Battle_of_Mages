@@ -34,6 +34,7 @@ class Player(pg.sprite.Sprite):
         self.current_image = 0
         self.current_animation = self.idle_animation_right
 
+
         self.image = self.idle_animation_right[0]
 
         self.rect = self.image.get_rect()
@@ -47,6 +48,59 @@ class Player(pg.sprite.Sprite):
         self.charge_mode = False
 
 
+    def update(self):
+
+        direction = 0
+
+        keys = pg.key.get_pressed()
+
+        if keys[pg.K_a]:
+            direction = -1
+            self.side = "left"
+        elif keys[pg.K_d]:
+            direction = 1
+            self.side = "right"
+
+
+        # Движение
+        self.handle_movement(direction, keys)
+
+        # Анимация персонажа
+        self.handle_animation()
+
+
+    def handle_movement(self, direction, keys):
+        if self.attack_mode:
+            return
+
+
+        if direction != 0:
+            self.animation_mode = True
+            self.charge_mode = False
+            self.rect.x += direction
+            # Сменяем анимацию
+            self.current_animation = self.move_animation_left if direction == -1 else self.move_animation_right
+
+        # elif keys[pg.K_s]:
+        #     self.animation_mode = False 
+        #     self.charge_mode = False
+        #     self.image = self.down[self.side != "right"]
+
+        # elif keys[pg.K_SPACE]:
+        #     self.animation_mode = False
+        #     self.charge_mode = True
+        #     self.image = self.charge[self.side != "right"]
+
+
+        else:
+            self.animation_mode = True
+            self.charge_mode = False
+            self.current_animation = self.idle_animation_left if self.side == "left" else self.idle_animation_right
+    
+        if self.rect.right >= SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+        elif self.rect.left <= 0:
+            self.rect.left = 0
 
     def load_animations(self):
 
@@ -54,11 +108,45 @@ class Player(pg.sprite.Sprite):
         for i in range(1, 4):
             self.idle_animation_right.append(load_image(f"images/fire wizard/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT))
 
+        self.idle_animation_left = []
+        for image in self.idle_animation_right:
+            self.idle_animation_left.append(pg.transform.flip(image, True, False))
+
+        # Анимация движения вправо
+        self.move_animation_right = []
+        for i in range(1, 4):
+            self.move_animation_right.append(load_image(f"images/fire wizard/move{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT))
+
+        # Анимация движения влево
+        self.move_animation_left = []
+        for image in self.move_animation_right:
+            self.move_animation_left.append(pg.transform.flip(image, True, False))
+
+
+        # Приседания
+        self.down = [load_image(f"images/fire wizard/down.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.down.append(pg.transform.flip(self.down[0], True, False))
+
+        # Подготовка к атаке
+        self.charge = [load_image(f"images/fire wizard/charge.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.charge.append(pg.transform.flip(self.charge[0], True, False))
+
+        # Атака
+        self.attack = [load_image(f"images/fire wizard/attack.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.attack.append(pg.transform.flip(self.attack[0], True, False))
 
 
 
+    def handle_animation(self):
 
-
+        if self.animation_mode and not self.attack_mode:
+            if pg.time.get_ticks() - self.timer > self.interval:
+                # переключаем анимацию на следующий кадр
+                self.current_image += 1
+                if self.current_image >= len(self.current_animation):
+                    self.current_image = 0
+                self.image = self.current_animation[self.current_image]
+                self.timer = pg.time.get_ticks()
 
 class Game:
     def __init__(self):
@@ -94,7 +182,7 @@ class Game:
 
 
     def update(self):
-        ...
+        self.player.update()
 
 
     def draw(self):
