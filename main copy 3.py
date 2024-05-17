@@ -81,15 +81,15 @@ class Player(pg.sprite.Sprite):
             # Сменяем анимацию
             self.current_animation = self.move_animation_left if direction == -1 else self.move_animation_right
 
-        # elif keys[pg.K_s]:
-        #     self.animation_mode = False 
-        #     self.charge_mode = False
-        #     self.image = self.down[self.side != "right"]
+        elif keys[pg.K_s]:
+            self.animation_mode = False 
+            self.charge_mode = False
+            self.image = self.down[self.side != "right"]
 
-        # elif keys[pg.K_SPACE]:
-        #     self.animation_mode = False
-        #     self.charge_mode = True
-        #     self.image = self.charge[self.side != "right"]
+        elif keys[pg.K_SPACE]:
+            self.animation_mode = False
+            self.charge_mode = True
+            self.image = self.charge[self.side != "right"]
 
 
         else:
