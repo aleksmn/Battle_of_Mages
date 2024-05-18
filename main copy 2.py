@@ -226,7 +226,7 @@ class Player(pg.sprite.Sprite):
         # Персонаж стоит и смотрит вправо
         self.idle_animation_right = []
         for i in range(1, 4):
-            self.idle_animation_right.append(load_image(f"images/fire wizard/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT))
+            self.idle_animation_right.append(load_image(f"images/{self.folder}/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT))
         # Смотрит влево
         self.idle_animation_left = []
         for image in self.idle_animation_right:
@@ -235,7 +235,7 @@ class Player(pg.sprite.Sprite):
         # Анимация движения вправо
         self.move_animation_right = []
         for i in range(1, 5):
-            self.move_animation_right.append(load_image(f"images/fire wizard/move{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT))
+            self.move_animation_right.append(load_image(f"images/{self.folder}/move{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT))
 
         # Анимация движения влево
         self.move_animation_left = []
@@ -244,15 +244,15 @@ class Player(pg.sprite.Sprite):
 
 
         # Приседания
-        self.down = [load_image(f"images/fire wizard/down.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.down = [load_image(f"images/{self.folder}/down.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
         self.down.append(pg.transform.flip(self.down[0], True, False))
 
         # Подготовка к атаке
-        self.charge = [load_image(f"images/fire wizard/charge.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.charge = [load_image(f"images/{self.folder}/charge.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
         self.charge.append(pg.transform.flip(self.charge[0], True, False))
 
         # Атака
-        self.attack = [load_image(f"images/fire wizard/attack.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.attack = [load_image(f"images/{self.folder}/attack.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
         self.attack.append(pg.transform.flip(self.attack[0], True, False))
 
 
@@ -369,6 +369,8 @@ class Game:
         self.player = Player()
         self.enemy = Enemy(folder="earth monk")
 
+        self.win = None
+
         # Запускаем игру
         self.clock = pg.time.Clock()
         self.run()
@@ -389,6 +391,10 @@ class Game:
 
 
     def update(self):
+
+        if self.win is not None:
+            return
+
         self.player.update()
         self.enemy.update(self.player)
 
@@ -401,6 +407,18 @@ class Game:
         for hit in hits:
             self.enemy.hp -= hit.power
 
+        # Попадания файербола в игрока
+        if self.player.image not in self.player.down:
+            hits = pg.sprite.spritecollide(self.player, self.enemy.magic_balls, True,
+                                            pg.sprite.collide_rect_ratio(0.3))
+            for hit in hits:
+                self.player.hp -= hit.power
+
+        # Проверка на победу
+        if self.player.hp <= 0:
+            self.win = self.enemy
+        elif self.enemy.hp <= 0:
+            self.win = self.player
 
     
     def draw(self):
@@ -427,6 +445,21 @@ class Game:
 
         # передний план
         self.screen.blit(self.foreground, (0, 0))
+
+
+        # Сообщение о победе
+        if self.win == self.player:
+            text = text_render(f"Победил маг слева")
+            text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            self.screen.blit(text, text_rect)
+
+        if self.win == self.enemy:
+            text = text_render(f"Победил маг справа")
+            text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            self.screen.blit(text, text_rect)
+            
+
+
         pg.display.flip()
 
 
