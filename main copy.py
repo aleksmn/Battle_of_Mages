@@ -351,7 +351,7 @@ class MagicBall(pg.sprite.Sprite):
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, enemy):
 
         # Создание окна
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -364,7 +364,7 @@ class Game:
         self.player = Player()
 
         # Создаем объект Enemy
-        self.enemy = Enemy(folder="earth monk")
+        self.enemy = Enemy(folder=enemy)
 
         self.win = None
 
@@ -481,18 +481,50 @@ class Menu:
         # селектор для выборо противника
         self.menu.add.selector('Противник: ', [('Маг молний', 1), ('Монах земли', 2), ('Случайный', 3)], onchange=self.set_enemy)
         # Начать одиночную игру
+        self.menu.add.button('Играть', self.start_one_player_game)
+
+        self.menu.add.label(title="Режим на двоих")
+        self.menu.add.selector('Левый игрок: ', [('Маг молний', 1), ('Монах земли', 2), ('Маг огня', 3)], onchange=self.set_left_player)
+        self.menu.add.selector('Правый игрок: ', [('Маг молний', 1), ('Монах земли', 2), ('Маг огня', 3)],  onchange=self.set_right_player)
+
+        # Начать игру для двоих
         self.menu.add.button('Играть')
+
+        self.enemies = ["lightning wizard", "earth monk"]
+        self.enemy = self.enemies[0]
+
+        self.players = ["lightning wizard", "earth monk", "fire wizard"]
+        self.left_player = self.players[1]
+        self.right_player = self.players[0]
 
 
         # Запуск
         self.run()
 
 
+    def set_left_player(self, selected, value):
+        self.left_player = self.players[value - 1]
+        print("Левый игрок", self.left_player)
+
+    def set_right_player(self, selected, value):
+        self.right_player = self.players[value - 1]
+        print("Правый игрок", self.right_player)
+
+
     def set_enemy(self, selected, value):
         # выбор противника для одиночной игры
-        print(selected, value)
+        if value in (1, 2):
+            self.enemy = self.enemies[value - 1]
+        else:
+            self.enemy = random.choice(self.enemies)
+        print("Выбран противник", self.enemy)
 
 
+    def start_one_player_game(self):
+        """Запуск одиночной игры с выбранным противником """
+        # создаем одиночную игру
+        Game(self.enemy)
+        
 
     def run(self):
         self.menu.mainloop(self.surface)
