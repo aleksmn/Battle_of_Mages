@@ -153,22 +153,30 @@ class Enemy(pg.sprite.Sprite):
 
 # Создадим класс персонажа игрока
 class Player(pg.sprite.Sprite):
-    def __init__(self, folder="fire wizard"):
+    def __init__(self, folder="fire wizard", first_player=True):
         super().__init__()
 
         self.folder = folder
 
         self.load_animations()
 
-        self.image = self.idle_animation_right[0]
+        if first_player:
+            self.coord = (100, SCREEN_HEIGHT // 2)
+            self.current_animation = self.idle_animation_right
+            self.side = "right"
+
+        else:
+            self.coord = (SCREEN_WIDTH - 100, SCREEN_HEIGHT // 2)
+            self.current_animation = self.idle_animation_left
+            self.side = "left"
+
+        self.image = self.current_animation[0] 
         self.current_image = 0
-        self.current_animation = self.idle_animation_right
         self.rect = self.image.get_rect()
-        self.rect.center = (100, SCREEN_HEIGHT // 2)
+        self.rect.center = self.coord
 
         self.timer = pg.time.get_ticks()
         self.interval = 300
-        self.side = "right"
         self.animation_mode = True
 
         self.charge_power = 0
@@ -188,7 +196,7 @@ class Player(pg.sprite.Sprite):
 
         self.idle_animation_right = []
         for i in range(1, 4):
-            self.idle_animation_right.append(load_image(f"images/fire wizard/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT))
+            self.idle_animation_right.append(load_image(f"images/{self.folder}/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT))
 
         self.idle_animation_left = []
         for image in self.idle_animation_right:
@@ -197,7 +205,7 @@ class Player(pg.sprite.Sprite):
         # Анимация движения вправо
         self.move_animation_right = []
         for i in range(1, 4):
-            self.move_animation_right.append(load_image(f"images/fire wizard/move{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT))
+            self.move_animation_right.append(load_image(f"images/{self.folder}/move{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT))
 
         # Анимация движения влево
         self.move_animation_left = []
@@ -206,20 +214,20 @@ class Player(pg.sprite.Sprite):
 
 
         # Приседания
-        self.down = [load_image(f"images/fire wizard/down.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.down = [load_image(f"images/{self.folder}/down.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
         self.down.append(pg.transform.flip(self.down[0], True, False))
 
         # Подготовка к атаке
-        self.charge = [load_image(f"images/fire wizard/charge.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.charge = [load_image(f"images/{self.folder}/charge.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
         self.charge.append(pg.transform.flip(self.charge[0], True, False))
 
         # Атака
-        self.attack = [load_image(f"images/fire wizard/attack.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
+        self.attack = [load_image(f"images/{self.folder}/attack.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)]
         self.attack.append(pg.transform.flip(self.attack[0], True, False))
 
 
 
-    def update(self):
+    def update(self, player=None):
 
         direction = 0
 
@@ -321,7 +329,6 @@ class Player(pg.sprite.Sprite):
 
 
 
-
 class MagicBall(pg.sprite.Sprite):
     def __init__(self, coord, side, power, folder):
         super().__init__()
@@ -351,7 +358,7 @@ class MagicBall(pg.sprite.Sprite):
 
 
 class Game:
-    def __init__(self, enemy):
+    def __init__(self, mode, wizards):
 
         # Создание окна
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -360,11 +367,20 @@ class Game:
         self.background = load_image("images/background.png", SCREEN_WIDTH, SCREEN_HEIGHT)
         self.foreground = load_image("images/foreground.png", SCREEN_WIDTH, SCREEN_HEIGHT)
 
-        # Создаем объект игрок
-        self.player = Player()
 
-        # Создаем объект Enemy
-        self.enemy = Enemy(folder=enemy)
+        if mode == "one player":
+            # Создаем объект игрок
+            self.player = Player()
+            # Создаем объект Enemy
+            self.enemy = Enemy(folder=wizards[0])
+
+        elif mode == "two players":
+            self.player = Player(folder=wizards[0])
+            self.enemy = Player(folder=wizards[1], first_player=False)
+            
+
+
+
 
         self.win = None
 
@@ -488,7 +504,7 @@ class Menu:
         self.menu.add.selector('Правый игрок: ', [('Маг молний', 1), ('Монах земли', 2), ('Маг огня', 3)],  onchange=self.set_right_player)
 
         # Начать игру для двоих
-        self.menu.add.button('Играть')
+        self.menu.add.button('Играть', self.start_two_player_game)
 
         self.enemies = ["lightning wizard", "earth monk"]
         self.enemy = self.enemies[0]
@@ -523,8 +539,11 @@ class Menu:
     def start_one_player_game(self):
         """Запуск одиночной игры с выбранным противником """
         # создаем одиночную игру
-        Game(self.enemy)
-        
+        Game("one player", [self.enemy])
+
+    def start_two_player_game(self):
+        # Запуск игры для двоих
+        Game("two players", [self.left_player, self.right_player])
 
     def run(self):
         self.menu.mainloop(self.surface)
