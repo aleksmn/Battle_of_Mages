@@ -356,7 +356,7 @@ class Player(pg.sprite.Sprite):
 
 # Создаем класс для игры
 class Game:
-    def __init__(self):
+    def __init__(self, enemy):
 
         # Создание окна
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -367,7 +367,7 @@ class Game:
 
         # Создаем объекты игроков
         self.player = Player()
-        self.enemy = Enemy(folder="earth monk")
+        self.enemy = Enemy(folder=enemy)
 
         self.win = None
 
@@ -464,6 +464,68 @@ class Game:
 
 
 
+
+class Menu:
+    def __init__(self):
+        self.surface = pg.display.set_mode((900, 550))
+
+        self.menu = pygame_menu.Menu(
+            height=550,
+            theme=pygame_menu.themes.THEME_SOLARIZED,
+            title='Битва магов',
+            width=900,
+        )
+
+        # Виджеты меню
+
+        self.menu.add.label(title="Режим на одного")
+        self.menu.add.selector('Противник: ', [('Маг молний', 1), ('Монах земли', 2), ('Случайный', 3)], onchange=self.set_enemy)
+        self.menu.add.button('Играть', self.start_one_player_game)
+
+        # Выбор режима для двоих игроков
+        self.menu.add.label(title="Режим на двоих")
+        self.menu.add.selector('Левый игрок: ', [('Маг молний', 1), ('Монах земли', 2), ('Маг огня', 3)],
+                               onchange=self.set_left_player)
+        self.menu.add.selector('Правый игрок: ', [('Маг молний', 1), ('Монах земли', 2), ('Маг огня', 3)],
+                               onchange=self.set_right_player)
+        self.menu.add.button('Играть', self.start_two_player_game)
+        self.menu.add.button('Выход', pygame_menu.events.EXIT)
+    
+        self.enemies = ["lightning wizard", "earth monk"]
+        self.enemy = self.enemies[0]
+
+        self.players = ["lightning wizard", "earth monk", "fire wizard"]
+        self.left_player = self.players[0]
+        self.right_player = self.players[0]
+
+        # Запуск меню
+        self.run()
+
+    def set_left_player(self, selected, value):
+        self.left_player = self.players[value - 1]
+
+    def set_right_player(self):
+        self.right_player = self.players[value - 1]
+
+    def start_two_player_game(self):
+        ...
+
+    def set_enemy(self, selected, value):
+        if value in (1, 2):
+            self.enemy = self.enemies[value - 1]
+        else:
+            self.enemy = random.choice(self.enemies)
+
+    def start_one_player_game(self):
+        print("Начинаем одиночную игру")
+        Game(self.enemy)
+
+    def run(self):
+        self.menu.mainloop(self.surface)
+
+
+
+
 # Точка входа в программу
 if __name__ == "__main__":
-    Game()
+    Menu()
