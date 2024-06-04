@@ -257,6 +257,7 @@ class Game:
 
     def update(self):
         self.player.update()
+        self.player.magic_balls.update()
 
 
     def draw(self):
@@ -265,6 +266,9 @@ class Game:
 
         # Отрисовка персонажей
         self.screen.blit(self.player.image, self.player.rect)
+
+        # Файерболл
+        self.player.magic_balls.draw(self.screen)
 
 
         # передний план
