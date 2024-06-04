@@ -204,12 +204,12 @@ class Player(pg.sprite.Sprite):
                 self.image = self.current_animation[self.current_image]
                 self.timer = pg.time.get_ticks()
 
-        # if self.charge_mode:
-        #     self.charge_power += 1
-        #     # Изменяем индикатор зарядки
-        #     print(self.charge_power)
-        #     if self.charge_power == 100:
-        #         self.attack_mode = True
+        if self.charge_mode:
+            self.charge_power += 1
+            # Изменяем индикатор зарядки
+            print(self.charge_power)
+            if self.charge_power == 100:
+                self.attack_mode = True
 
 
         if self.attack_mode and self.charge_power > 0:
@@ -218,10 +218,10 @@ class Player(pg.sprite.Sprite):
             print("FIREBALL!")
             self.magic_balls.add(MagicBall(fireball_position, self.side, self.charge_power, self.folder))
 
-            # self.charge_power = 0
-            # self.charge_mode = False
-            # self.image = self.attack[self.side != "right"]
-            # self.timer = pg.time.get_ticks()
+            self.charge_power = 0
+            self.charge_mode = False
+            self.image = self.attack[self.side != "right"]
+            self.timer = pg.time.get_ticks()
 class Game:
     def __init__(self):
 
