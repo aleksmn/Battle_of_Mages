@@ -356,7 +356,10 @@ class Player(pg.sprite.Sprite):
 
 # Создаем класс для игры
 class Game:
-    def __init__(self, enemy):
+    def __init__(self, mode, wizards):
+
+        # Режим игры: one player, two players
+        self.mode = mode
 
         # Создание окна
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -366,8 +369,14 @@ class Game:
         self.foreground = load_image("images/foreground.png", SCREEN_WIDTH, SCREEN_HEIGHT)
 
         # Создаем объекты игроков
-        self.player = Player()
-        self.enemy = Enemy(folder=enemy)
+        if mode == "one player": 
+            self.player = Player()
+            self.enemy = Enemy(folder=wizards[0])
+
+        elif self.mode == "two players":
+            # режим для двоих игроков
+            ...
+            
 
         self.win = None
 
@@ -504,11 +513,12 @@ class Menu:
     def set_left_player(self, selected, value):
         self.left_player = self.players[value - 1]
 
-    def set_right_player(self):
+    def set_right_player(self, selected, value):
         self.right_player = self.players[value - 1]
 
     def start_two_player_game(self):
-        ...
+        print("Начать игру для двоих")
+        Game("two players", (self.left_player, self.right_player))
 
     def set_enemy(self, selected, value):
         if value in (1, 2):
@@ -518,7 +528,7 @@ class Menu:
 
     def start_one_player_game(self):
         print("Начинаем одиночную игру")
-        Game(self.enemy)
+        Game("one player", (self.enemy, ))
 
     def run(self):
         self.menu.mainloop(self.surface)
