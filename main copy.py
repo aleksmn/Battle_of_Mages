@@ -23,6 +23,10 @@ def load_image(file, width, height):
 def text_render(text):
     return font.render(str(text), True, "black")
 
+class Enemy(pg.sprite.Sprite):
+    def __init__(self, folder):
+        super().__init__()
+
 
 class Player(pg.sprite.Sprite):
     def __init__(self, folder="fire wizard"):
@@ -44,6 +48,10 @@ class Player(pg.sprite.Sprite):
         self.interval = 300
         self.animation_mode = True
         self.side = "right"
+        self.charge_power = 0
+        self.charge_mode = False
+        self.attack_mode = False
+        self.attack_interval = 500
 
 
     def load_animations(self):
@@ -55,7 +63,15 @@ class Player(pg.sprite.Sprite):
         self.move_animation_right = [load_image(f"images/{self.folder}/move{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT) for i in range(1, 5)]
         self.move_animation_left = [pg.transform.flip(image, True, False) for image in self.move_animation_right]
 
-
+        # Приседения
+        self.down_right = load_image(f"images/{self.folder}/down.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
+        self.down_left = pg.transform.flip(self.down_right, True, False)
+        # Атака
+        self.attack_right = load_image(f"images/{self.folder}/attack.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
+        self.attack_left = pg.transform.flip(self.attack_right, True, False)
+        # Атака
+        self.charge_right = load_image(f"images/{self.folder}/charge.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
+        self.charge_left = pg.transform.flip(self.charge_right, True, False)
 
 
     def handle_animation(self):
@@ -67,6 +83,23 @@ class Player(pg.sprite.Sprite):
                     self.current_image = 0
                 self.image = self.current_animation[self.current_image]
                 self.timer = pg.time.get_ticks()
+
+        if self.charge_mode:
+            self.charge_power += 1
+            print(self.charge_power)
+            if self.charge_power == 100:
+                self.attack_mode = True
+                print(self.attack_mode)
+
+        if self.attack_mode and self.charge_power > 0:
+            self.charge_power = 0
+            self.charge_mode = False
+            self.image = self.attack_left if self.side == "left" else self.attack_right
+            self.timer = pg.time.get_ticks()
+            if pg.time.get_ticks() - self.timer > self.attack_interval:
+                self.attack_mode = False
+                self.timer = pg.time.get_ticks()
+
 
     def update(self):
         keys = pg.key.get_pressed()
@@ -86,8 +119,30 @@ class Player(pg.sprite.Sprite):
         
         if direction != 0:
             # двигаем персонажа по оси x
-            ...
+            self.animation_mode = True  #
+            self.charge_mode = False
+            self.rect.x += direction
+            
+            self.current_animation = self.move_animation_left if direction == -1 else self.move_animation_right
+        
+        elif keys[pg.K_DOWN]:
 
+            self.animation_mode = False
+            self.charge_mode = False
+
+            self.image = self.down_right 
+
+        elif keys[pg.K_SPACE]:
+            self.animation_mode = True
+            self.charge_mode = True
+
+            self.image = self.charge_right if self.side == "right" else self.charge_left
+
+        else:
+            self.animation_mode = True
+            self.charge_mode = False
+
+            self.current_animation = self.idle_animation_left if self.side == "left" else self.idle_animation_right
 
 
 class Game:

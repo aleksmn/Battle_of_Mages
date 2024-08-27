@@ -46,6 +46,9 @@ class Game:
     def draw(self):
         self.screen.blit(self.background, (0, 0))
 
+    def update(self):
+        ...
+
 
     def event(self):
         for event in pg.event.get():
@@ -56,6 +59,7 @@ class Game:
     def run(self):
         while self.is_running:
             self.event()
+            self.update()
             self.draw()
 
 
