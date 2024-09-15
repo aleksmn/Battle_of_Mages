@@ -183,6 +183,8 @@ class Player(pg.sprite.Sprite):
         self.attack_mode = False
         self.attack_interval = 500
 
+        self.magic_balls = pg.sprite.Group()
+
 
     def load_animations(self):
 
@@ -224,6 +226,9 @@ class Player(pg.sprite.Sprite):
                 self.attack_mode = True
 
         if self.attack_mode and self.charge_power > 0:
+            print("Fireball!!!")
+            # создаем объект фаерболл и добавялем его в группу спрайтов
+
             self.charge_power = 0
             self.charge_mode = False
             self.image = self.attack_left if self.side == "left" else self.attack_right
