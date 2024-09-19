@@ -16,7 +16,7 @@ class Menu:
 
         self.menu.add.text_input('Имя :', default='John Doe', onchange=self.set_name)
         self.menu.add.selector('Сложность :', [('Hard', 1), ('Easy', 2)], onchange=self.set_difficulty)
-        self.menu.add.label(title="Это ярлык")
+        self.menu.add.label(title="Удачи в игре!")
         self.menu.add.button("Играть", self.start_game)
         self.menu.add.button("Выйти", self.quit_game)
 
@@ -30,10 +30,10 @@ class Menu:
         print(value)
 
     def start_game(self):
-        ...
+        print("Старт игры!")
 
     def quit_game(self):
-        ...
+        print("Выход из игры")
 
     def run(self):
         self.menu.mainloop(self.surface)
