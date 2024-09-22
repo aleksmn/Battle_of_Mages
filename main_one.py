@@ -63,7 +63,7 @@ class Enemy(pg.sprite.Sprite):
 
         self.hp = 200
 
-        self.image = self.idle_animation_left[0]
+        self.image = self.idle_animation_right[0]
         self.current_image = 0
         self.current_animation = self.idle_animation_left
 
@@ -86,8 +86,8 @@ class Enemy(pg.sprite.Sprite):
         self.move_timer = pg.time.get_ticks()
 
         self.charge_power = 0
-    def load_animations(self):
 
+    def load_animations(self):
         self.idle_animation_right = [load_image(f"images/{self.folder}/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT) for i in range(1, 4)]
 
         self.idle_animation_left = [pg.transform.flip(image, True, False) for image in self.idle_animation_right]
@@ -105,10 +105,9 @@ class Enemy(pg.sprite.Sprite):
         self.charge_right = load_image(f"images/{self.folder}/charge.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
         self.charge_left = pg.transform.flip(self.charge_right, True, False)
 
-
     def update(self, player):
         self.handle_attack_mode(player)
-        # self.handle_movement()
+        self.handle_movement()
         self.handle_animation()
 
     def handle_attack_mode(self, player):
@@ -127,16 +126,38 @@ class Enemy(pg.sprite.Sprite):
                     self.side = "left"
                 else:
                     self.side = "right"
+
                 self.animation_mode = False
                 self.image = self.attack_right if self.side == "right" else self.attack_left
-
 
         if self.attack_mode:
             if pg.time.get_ticks() - self.timer > self.attack_interval:
                 self.attack_mode = False
                 self.timer = pg.time.get_ticks()
 
+    def handle_movement(self):
+        if self.attack_mode:
+            return
 
+        now = pg.time.get_ticks()
+
+        if now - self.move_timer < self.move_duration:
+            self.animation_mode = True
+            self.rect.x += self.direction
+            self.current_animation = self.move_animation_left if self.direction == -1 else self.move_animation_right
+        else:
+            if random.randint(1, 100) == 1 and now - self.move_timer > self.move_interval:
+                self.move_timer = pg.time.get_ticks()
+                self.move_duration = random.randint(400, 1500)
+                self.direction = random.choice([-1, 1])
+            else:
+                self.animation_mode = True
+                self.current_animation = self.idle_animation_left if self.side == "left" else self.idle_animation_right
+
+        if self.rect.right >= SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+        elif self.rect.left <= 0:
+            self.rect.left = 0
 
     def handle_animation(self):
         if self.animation_mode and not self.attack_mode:
@@ -147,9 +168,12 @@ class Enemy(pg.sprite.Sprite):
                 self.image = self.current_animation[self.current_image]
                 self.timer = pg.time.get_ticks()
 
-        
-
-
+        if self.attack_mode and self.charge_power > 0:
+            ball_position = self.rect.topright if self.side == "right" else self.rect.topleft
+            self.magic_balls.add(MagicBall(ball_position, self.side, self.charge_power, self.folder))
+            self.charge_power = 0
+            self.image = self.attack_right if self.side == "right" else self.attack_left
+            self.timer = pg.time.get_ticks()
 
 class Player(pg.sprite.Sprite):
     def __init__(self, folder="fire wizard"):
@@ -188,7 +212,7 @@ class Player(pg.sprite.Sprite):
 
     def load_animations(self):
 
-        self.idle_animation_right = [load_image(f"images/fire wizard/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT) for i in range(1, 4)]
+        self.idle_animation_right = [load_image(f"images/{self.folder}/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT) for i in range(1, 4)]
 
         self.idle_animation_left = [pg.transform.flip(image, True, False) for image in self.idle_animation_right]
 
@@ -226,8 +250,9 @@ class Player(pg.sprite.Sprite):
                 self.attack_mode = True
 
         if self.attack_mode and self.charge_power > 0:
-            print("Fireball!!!")
             # создаем объект фаерболл и добавялем его в группу спрайтов
+            fireball_position = self.rect.topright if self.side == "right" else self.rect.topleft
+            self.magic_balls.add(MagicBall(fireball_position, self.side, self.charge_power, self.folder))
 
             self.charge_power = 0
             self.charge_mode = False
@@ -320,6 +345,8 @@ class Game:
         self.screen.blit(self.player.image, self.player.rect)
         self.screen.blit(self.enemy.image, self.enemy.rect)
 
+        self.player.magic_balls.draw(self.screen)
+        self.enemy.magic_balls.draw(self.screen)
 
 
         self.screen.blit(self.foreground, (0, 0))
@@ -329,6 +356,9 @@ class Game:
         self.player.update()
         self.enemy.update(self.player)
 
+
+        self.enemy.magic_balls.update()
+        self.player.magic_balls.update()
         
     def event(self):
         for event in pg.event.get():
