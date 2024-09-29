@@ -33,6 +33,7 @@ class MagicBall(pg.sprite.Sprite):
         self.side = side
         self.power = power / 2
 
+
         self.image = load_image(f"images/{folder}/magicball.png", 200, 150)
         if self.side == "right":
             self.image = pg.transform.flip(self.image, True, False)
@@ -63,7 +64,7 @@ class Enemy(pg.sprite.Sprite):
 
         self.hp = 200
 
-        self.image = self.idle_animation_right[0]
+        self.image = self.idle_animation_left[0]
         self.current_image = 0
         self.current_animation = self.idle_animation_left
 
@@ -110,6 +111,7 @@ class Enemy(pg.sprite.Sprite):
         self.handle_movement()
         self.handle_animation()
 
+
     def handle_attack_mode(self, player):
 
         if not self.attack_mode:
@@ -133,6 +135,7 @@ class Enemy(pg.sprite.Sprite):
         if self.attack_mode:
             if pg.time.get_ticks() - self.timer > self.attack_interval:
                 self.attack_mode = False
+
                 self.timer = pg.time.get_ticks()
 
     def handle_movement(self):
@@ -205,9 +208,12 @@ class Player(pg.sprite.Sprite):
         self.charge_power = 0
         self.charge_mode = False
         self.attack_mode = False
+        self.down_mode = False
         self.attack_interval = 500
 
         self.magic_balls = pg.sprite.Group()
+
+        self.hp = 200
 
 
     def load_animations(self):
@@ -293,6 +299,7 @@ class Player(pg.sprite.Sprite):
             self.rect.x += direction
             self.current_animation = self.move_animation_left if direction == -1 else self.move_animation_right
         elif keys[self.key_down]:
+            self.down_mode = True
             self.animation_mode = False
             self.charge_mode = False
             self.image = self.down_right if self.side == "right" else self.down_left
@@ -301,6 +308,7 @@ class Player(pg.sprite.Sprite):
             self.image = self.charge_right if self.side == "right" else self.charge_left
             self.charge_mode = True
         else:
+            self.down_mode = False
             self.animation_mode = True
             self.charge_mode = False
             self.current_animation = self.idle_animation_left if self.side == "left" else self.idle_animation_right
@@ -309,6 +317,9 @@ class Player(pg.sprite.Sprite):
             self.rect.right = SCREEN_WIDTH
         elif self.rect.left <= 0:
             self.rect.left = 0
+
+
+
 
 
 
@@ -335,6 +346,7 @@ class Game:
         self.is_running = True
         self.win = None
 
+
         self.run()
 
 
@@ -359,6 +371,23 @@ class Game:
 
         self.enemy.magic_balls.update()
         self.player.magic_balls.update()
+
+        # Урон от файерболов
+        hits = pg.sprite.spritecollide(self.enemy, self.player.magic_balls, True, pg.sprite.collide_rect_ratio(0.3))
+        for hit in hits:
+            self.enemy.hp -= hit.power
+
+
+        if not self.player.down_mode:
+
+            hits = pg.sprite.spritecollide(self.player, self.enemy.magic_balls, True, pg.sprite.collide_rect_ratio(0.3))
+            for hit in hits:
+                self.player.hp -= hit.power
+                print(self.player.hp)
+
+
+
+
         
     def event(self):
         for event in pg.event.get():
