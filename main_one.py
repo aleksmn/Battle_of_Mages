@@ -361,6 +361,14 @@ class Game:
         self.enemy.magic_balls.draw(self.screen)
 
 
+        # Полоски здоровья
+        pg.draw.rect(self.screen, pg.Color('green'), (10, 10, self.player.hp, 20))
+        pg.draw.rect(self.screen, pg.Color('black'), (10, 10, 100 * 2, 20), 2)
+
+
+        
+
+
         self.screen.blit(self.foreground, (0, 0))
 
     def update(self):
@@ -384,7 +392,6 @@ class Game:
             for hit in hits:
                 self.player.hp -= hit.power
                 print(self.player.hp)
-
 
 
 
