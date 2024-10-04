@@ -358,10 +358,10 @@ class Menu:
         self.right_player = self.players[value - 1]
 
     def start_one_player_game(self):
-        Game("one player", (self.enemy,))
+        Game("one player", [self.enemy])
 
     def start_two_player_game(self):
-        Game("two players", (self.left_player, self.right_player))
+        Game("two players", [self.left_player, self.right_player])
 
     def run(self):
         self.menu.mainloop(self.surface)
@@ -381,8 +381,8 @@ class Game:
 
         if self.mode == "one player":
             self.player = Player()
-
             self.enemy = Enemy(wizards[0])
+
         elif self.mode == "two players":
             self.player = Player(wizards[0])
             self.enemy = Player(wizards[1], first_player=False)
