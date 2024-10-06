@@ -26,6 +26,43 @@ def text_render(text):
 
 
 
+class MagicBall(pg.sprite.Sprite):
+    def __init__(self, coord, side, power, folder):
+        super().__init__()
+
+        self.side = side
+        self.power = power / 2
+
+        self.image = load_image(f"images/{folder}/magicball.png", 200, 150)
+
+        if self.side == "right":
+            self.image = pg.transform.flip(self.image, True, False)
+        self.rect = self.image.get_rect()
+        self.rect.center = coord[0], coord[1] + 120
+
+
+    def update(self):
+        if self.side == "right":
+            self.rect.x += 4
+            if self.rect.left >= SCREEN_WIDTH:
+                self.kill()
+        else:
+            self.rect.x -= 4
+            if self.rect.right <= 0:
+                self.kill()
+
+
+
+class Enemy(pg.sprite.Sprite):
+    def __init__(self, folder):
+        super().__init__()
+
+        self.folder = folder
+        self.load_animations()
+
+        
+
+
 class Player(pg.sprite.Sprite):
     def __init__(self, folder="fire wizard"):
         super().__init__()
@@ -62,6 +99,9 @@ class Player(pg.sprite.Sprite):
         self.down_mode = False
 
         self.charge_power = 0
+        self.attack_interval = 500
+
+        self.magic_balls = pg.sprite.Group()
 
         
 
@@ -87,7 +127,11 @@ class Player(pg.sprite.Sprite):
 
     def handle_animation(self):
 
-        if self.animation_mode:
+        if not self.charge_mode and self.charge_power > 0:
+            self.attack_mode = True
+
+
+        if self.animation_mode and not self.attack_mode:
             if pg.time.get_ticks() - self.timer > self.interval:
                 self.current_image += 1
                 if self.current_image >= len(self.current_animation):
@@ -104,14 +148,27 @@ class Player(pg.sprite.Sprite):
 
             print(self.charge_power)
 
+        if self.attack_mode and self.charge_power > 0:
+            # Запускаем файербол
+            fireball_position = self.rect.topright if self.side == "right" else self.rect.topleft
+            self.magic_balls.add(MagicBall(fireball_position, self.side, self.charge_power, self.folder))
+            self.charge_power = 0
+            self.charge_mode = False
+            self.image = self.attack_left if self.side == "left" else self.attack_right
+            self.timer = pg.time.get_ticks()
+
 
     def handle_attack_mode(self):
         if self.attack_mode:
-            print("АТАКА!")
-            ...
+            if pg.time.get_ticks() - self.timer > self.attack_interval:
+                self.attack_mode = False
+                self.timer = pg.time.get_ticks()
 
 
     def handle_movement(self):
+        if self.attack_mode:
+            return
+
         keys = pg.key.get_pressed()
         direction = 0
 
@@ -150,8 +207,10 @@ class Player(pg.sprite.Sprite):
 
 
         # Сделать границы экрана для персонажа
-
-
+        if self.rect.right >= SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+        elif self.rect.left <= 0:
+            self.rect.left = 0
 
 
 
@@ -195,12 +254,18 @@ class Game:
         self.screen.blit(self.player.image, self.player.rect)
 
 
+        # Отрисовка файерболов
+        self.player.magic_balls.draw(self.screen)
+
+
 
         self.screen.blit(self.foreground, (0, 0))
 
 
     def update(self):
         self.player.update()
+
+        self.player.magic_balls.update()
 
     def event(self):
         for event in pg.event.get():
