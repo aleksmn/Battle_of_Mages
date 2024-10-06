@@ -365,13 +365,31 @@ class Game:
         pg.draw.rect(self.screen, pg.Color('green'), (10, 10, self.player.hp, 20))
         pg.draw.rect(self.screen, pg.Color('black'), (10, 10, 100 * 2, 20), 2)
 
+        pg.draw.rect(self.screen, pg.Color('green'), (SCREEN_WIDTH - 210, 10, self.enemy.hp, 20))
+        pg.draw.rect(self.screen, pg.Color('black'), (SCREEN_WIDTH - 210, 10, 100 * 2, 20), 2)
 
-        
+        if self.win == self.player:
+            text = text_render("ПОБЕДА")
+            text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            self.screen.blit(text, text_rect)
+            text2 = text_render("Маг в левом углу")
+            text_rect2 = text2.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100))
+            self.screen.blit(text2, text_rect2)
+        elif self.win == self.enemy:
+            text = text_render("ПОБЕДА")
+            text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            self.screen.blit(text, text_rect)
+            text2 = text_render("Маг в правом углу")
+            text_rect2 = text2.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100))
+            self.screen.blit(text2, text_rect2)
 
 
         self.screen.blit(self.foreground, (0, 0))
 
     def update(self):
+
+        if self.win:
+            return
 
         self.player.update()
         self.enemy.update(self.player)
@@ -391,9 +409,11 @@ class Game:
             hits = pg.sprite.spritecollide(self.player, self.enemy.magic_balls, True, pg.sprite.collide_rect_ratio(0.3))
             for hit in hits:
                 self.player.hp -= hit.power
-                print(self.player.hp)
 
-
+        if self.player.hp <= 0:
+            self.win = self.enemy
+        elif self.enemy.hp <= 0:
+            self.win = self.player
 
         
     def event(self):
