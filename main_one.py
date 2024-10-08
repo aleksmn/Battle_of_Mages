@@ -324,9 +324,8 @@ class Player(pg.sprite.Sprite):
 
 
 class Game:
-    def __init__(self, mode='', wizards=[]):
+    def __init__(self):
 
-        self.mode = mode
 
         # Создание окна
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
