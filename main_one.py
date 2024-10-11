@@ -212,6 +212,8 @@ class Player(pg.sprite.Sprite):
 
         self.magic_balls = pg.sprite.Group()
 
+        self.charge_indicator = pg.Surface((self.charge_power, 10))
+
         self.hp = 200
 
 
@@ -250,7 +252,11 @@ class Player(pg.sprite.Sprite):
                 self.timer = pg.time.get_ticks()
 
         if self.charge_mode:
-            self.charge_power += 1       
+            self.charge_power += 1
+            # Индикатор заряда
+            self.charge_indicator = pg.Surface((self.charge_power, 10))
+            self.charge_indicator.fill("red")
+
             if self.charge_power == 100:
                 self.attack_mode = True
 
@@ -357,6 +363,10 @@ class Game:
 
         self.player.magic_balls.draw(self.screen)
         self.enemy.magic_balls.draw(self.screen)
+
+        # Индикаторы заряда
+        if self.player.charge_mode:
+            self.screen.blit(self.player.charge_indicator, (self.player.rect.left + 120, self.player.rect.top))
 
 
         # Полоски здоровья
