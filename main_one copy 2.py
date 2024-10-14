@@ -129,8 +129,6 @@ class Player(pg.sprite.Sprite):
 
 
     def handle_animation(self):
-        print(self.charge_mode)
-
         if not self.charge_mode and self.charge_power > 0:
             self.attack_mode = True   
 
@@ -163,6 +161,9 @@ class Player(pg.sprite.Sprite):
 
 
     def handle_movement(self):
+        if self.attack_mode:
+            return
+        
         keys = pg.key.get_pressed()
         direction = 0
 
