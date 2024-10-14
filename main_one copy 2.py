@@ -129,6 +129,8 @@ class Player(pg.sprite.Sprite):
 
 
     def handle_animation(self):
+        print(self.charge_mode)
+
         if not self.charge_mode and self.charge_power > 0:
             self.attack_mode = True   
 
@@ -239,12 +241,16 @@ class Game:
         # отрисовка персонажей
         self.screen.blit(self.player.image, self.player.rect)
 
+        self.player.magic_balls.draw(self.screen)
+
 
         self.screen.blit(self.foreground, (0, 0))
 
     def update(self):
         # обновряем состояние игры, вызывается каждый кадр
         self.player.update()
+
+        self.player.magic_balls.update()
 
 
     def event(self):
