@@ -142,6 +142,7 @@ class Enemy(pg.sprite.Sprite):
 
                 self.timer = pg.time.get_ticks()
 
+                
 
     def handle_movement(self):
         if self.attack_mode:
