@@ -60,7 +60,133 @@ class Enemy(pg.sprite.Sprite):
         self.folder = folder
         self.load_animations()
 
-        
+        self.hp = 200
+
+        self.image = self.idle_animation_left[0]
+        self.current_image = 0
+        self.current_animation = self.idle_animation_left
+
+        self.rect = self.image.get_rect()
+        self.rect.center = (SCREEN_WIDTH - 100, SCREEN_HEIGHT // 2)
+
+        self.timer = pg.time.get_ticks()
+        self.interval = 300
+        self.side = "left"
+        self.animation_mode = True
+
+        self.magic_balls = pg.sprite.Group()
+
+        self.attack_mode = False
+        self.attack_interval = 500
+
+        self.move_interval = 800
+        self.move_duration = 0
+        self.direction = 0
+        self.move_timer = pg.time.get_ticks()
+
+        self.charge_power = 0
+
+        self.hp = 200
+
+
+    def load_animations(self):
+        self.idle_animation_right = [load_image(f"images/{self.folder}/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT) for i in range(1, 4)]
+
+        self.idle_animation_left = [pg.transform.flip(image, True, False) for image in self.idle_animation_right]
+
+        self.move_animation_right = [load_image(f"images/{self.folder}/move{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT) for i in range(1, 5)]
+        self.move_animation_left = [pg.transform.flip(image, True, False) for image in self.move_animation_right]
+
+        # Приседения
+        self.down_right = load_image(f"images/{self.folder}/down.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
+        self.down_left = pg.transform.flip(self.down_right, True, False)
+        # Атака
+        self.attack_right = load_image(f"images/{self.folder}/attack.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
+        self.attack_left = pg.transform.flip(self.attack_right, True, False)
+        # Атака
+        self.charge_right = load_image(f"images/{self.folder}/charge.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
+        self.charge_left = pg.transform.flip(self.charge_right, True, False)
+
+
+    def update(self, player):
+        self.handle_movement()
+        self.handle_animation()
+        self.handle_attack_mode(player)
+
+
+
+    def handle_attack_mode(self, player):
+
+        if not self.attack_mode:
+            attack_probability = 1
+
+            if player.charge_mode:
+                attack_probability += 2
+
+            if random.randint(1, 100) <= attack_probability:
+                self.attack_mode = True
+                self.charge_power = random.randint(1, 100)
+
+                if player.rect.centerx < self.rect.centerx:
+                    self.side = "left"
+                else:
+                    self.side = "right"
+
+                self.animation_mode = False
+                self.image = self.attack_right if self.side == "right" else self.attack_left
+
+        if self.attack_mode:
+            if pg.time.get_ticks() - self.timer > self.attack_interval:
+                self.attack_mode = False
+
+                self.timer = pg.time.get_ticks()
+
+
+    def handle_movement(self):
+        if self.attack_mode:
+            return
+
+        now = pg.time.get_ticks()
+
+        if now - self.move_timer < self.move_duration:
+            self.animation_mode = True
+            self.rect.x += self.direction
+            self.current_animation = self.move_animation_left if self.direction == -1 else self.move_animation_right
+
+        else:
+            if random.randint(1, 100) == 1 and now - self.move_timer > self.move_interval:
+                self.move_timer = pg.time.get_ticks()
+                self.move_duration = random.randint(400, 1500)
+                self.direction = random.choice([-1, 1])
+            else:
+                self.animation_mode = True
+                self.current_animation = self.idle_animation_left if self.side == "left" else self.idle_animation_right
+
+
+        if self.rect.right >= SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+        elif self.rect.left <= 0:
+            self.rect.left = 0
+
+
+    def handle_animation(self):
+        if self.animation_mode and not self.attack_mode:
+            if pg.time.get_ticks() - self.timer > self.interval:
+                self.current_image += 1
+                if self.current_image >= len(self.current_animation):
+                    self.current_image = 0
+                self.image = self.current_animation[self.current_image]
+                self.timer = pg.time.get_ticks()
+
+        if self.attack_mode and self.charge_power > 0:
+            ball_position = self.rect.topright if self.side == "right" else self.rect.topleft
+            self.magic_balls.add(MagicBall(ball_position, self.side, self.charge_power, self.folder))
+            self.charge_power = 0
+            self.image = self.attack_right if self.side == "right" else self.attack_left
+            self.timer = pg.time.get_ticks()
+
+
+
 
 
 class Player(pg.sprite.Sprite):
@@ -102,6 +228,10 @@ class Player(pg.sprite.Sprite):
         self.attack_interval = 500
 
         self.magic_balls = pg.sprite.Group()
+
+        
+        self.hp = 200
+
 
         
 
@@ -236,7 +366,7 @@ class Game:
 
         # Персонажи
         self.player = Player()
-
+        self.enemy = Enemy("earth monk")
 
         self.clock = pg.time.Clock()
 
@@ -252,20 +382,32 @@ class Game:
 
         # Отрисовка персонажей
         self.screen.blit(self.player.image, self.player.rect)
+        self.screen.blit(self.enemy.image, self.enemy.rect)
 
 
         # Отрисовка файерболов
         self.player.magic_balls.draw(self.screen)
+        self.enemy.magic_balls.draw(self.screen)
 
 
 
         self.screen.blit(self.foreground, (0, 0))
 
 
+        # Полоски здоровья
+        pg.draw.rect(self.screen, 'green', (10, 10, self.player.hp, 20))
+        pg.draw.rect(self.screen, 'black', (10, 10, 100 * 2, 20), 2)
+
+        pg.draw.rect(self.screen, 'green', (SCREEN_WIDTH - 210, 10, self.enemy.hp, 20))
+        pg.draw.rect(self.screen, 'black', (SCREEN_WIDTH - 210, 10, 100 * 2, 20), 2)
+
+
     def update(self):
         self.player.update()
+        self.enemy.update(self.player)
 
         self.player.magic_balls.update()
+        self.enemy.magic_balls.update()
 
     def event(self):
         for event in pg.event.get():
