@@ -53,6 +53,7 @@ class MagicBall(pg.sprite.Sprite):
 
 
 
+
 class Enemy(pg.sprite.Sprite):
     def __init__(self, folder):
         super().__init__()

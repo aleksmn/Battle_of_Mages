@@ -68,6 +68,7 @@ class Player(pg.sprite.Sprite):
     def load_animations(self):
 
         self.idle_animation_right = [load_image(f"images/{self.folder}/idle{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT) for i in range(1, 4)]
+
         self.idle_animation_left = [pg.transform.flip(image, True, False) for image in self.idle_animation_right]
 
         self.move_animation_right = [load_image(f"images/{self.folder}/move{i}.png", CHARACTER_WIDTH, CHARACTER_HEIGHT) for i in range(1, 5)]
@@ -79,70 +80,38 @@ class Player(pg.sprite.Sprite):
         # Атака
         self.attack_right = load_image(f"images/{self.folder}/attack.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
         self.attack_left = pg.transform.flip(self.attack_right, True, False)
-        # Зарядка
+        # Атака
         self.charge_right = load_image(f"images/{self.folder}/charge.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
         self.charge_left = pg.transform.flip(self.charge_right, True, False)
 
 
     def handle_animation(self):
 
-        if pg.time.get_ticks() - self.timer > self.interval:
-            self.current_image += 1
-            if self.current_image >= len(self.current_animation):
-                self.current_image = 0
-            self.image = self.current_animation[self.current_image]
+        if not self.charge_mode and self.charge_power > 0:
+            self.attack_mode = True        
+
+        if self.animation_mode and not self.attack_mode:
+            if pg.time.get_ticks() - self.timer > self.interval:
+                self.current_image += 1
+                if self.current_image >= len(self.current_animation):
+                    self.current_image = 0
+                self.image = self.current_animation[self.current_image]
+                self.timer = pg.time.get_ticks()
+
+        if self.charge_mode:
+            self.charge_power += 1
+            print(self.charge_power)       
+            if self.charge_power == 100:
+                self.attack_mode = True
+
+        if self.attack_mode and self.charge_power > 0:
+            print("Fireball!")            
+
+            self.charge_power = 0
+            self.charge_mode = False
+            self.image = self.attack_left if self.side == "left" else self.attack_right
             self.timer = pg.time.get_ticks()
 
-    
-    def handle_movement(self):
-
-        keys = pg.key.get_pressed()
-        direction = 0
-
-        if keys[self.key_left]:
-            direction = -1
-            self.side = "left"
-        elif keys[self.key_right]:
-            direction = 1
-            self.side = "right"
-
-
-        if direction != 0:
-            self.down_mode = False
-            self.animation_mode = True
-            self.charge_mode = False
-            self.rect.x += direction
-            self.current_animation = self.move_animation_right if self.side == "right" else self.move_animation_left
-
-        elif keys[self.key_down]:
-            self.down_mode = True
-            self.animation_mode = False
-            self.charge_mode = False
-            self.image = self.down_right if self.side == "right" else self.down_left
-
-        elif keys[self.key_charge]:
-            self.down_mode = False
-            self.animation_mode = False
-            self.charge_mode = True
-            self.image = self.charge_right if self.side == "right" else self.charge_left
-
-        else:
-            self.down_mode = False
-            self.animation_mode = True
-            self.charge_mode = False
-            self.current_animation = self.idle_animation_left if self.side == "left" else self.idle_animation_right
-
-        
-
-
-
-    def update(self):
-
-        self.handle_animation()
-        self.handle_movement()
-
-
-    
 
 
 class Game:
