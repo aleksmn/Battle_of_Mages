@@ -1,4 +1,4 @@
-# Егор
+# Мария
 import random
 import pygame as pg
 
@@ -14,6 +14,7 @@ FPS = 60
 
 font = pg.font.Font(None, 40)
 
+
 def load_image(file, width, height):
     image = pg.image.load(file)
     image = pg.transform.scale(image, (width, height))
@@ -24,30 +25,31 @@ def text_render(text):
     return font.render(str(text), True, "black")
 
 
+
+
+
+
 class Game:
     def __init__(self):
-        print("Игра")
-
         # Создание окна
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pg.display.set_caption("Битва магов")
 
-        # Фон
         self.background = load_image("images/background.png", SCREEN_WIDTH, SCREEN_HEIGHT)
 
 
-        self.clock = pg.time.Clock()
-        self.is_running = True
 
-        # Запуск игры
+        self.clock = pg.time.Clock()
+
+        self.is_running = True
+        self.win = None
+
         self.run()
 
-    
+
+
     def draw(self):
         self.screen.blit(self.background, (0, 0))
-
-    def update(self):
-        ...
 
 
     def event(self):
@@ -59,17 +61,15 @@ class Game:
     def run(self):
         while self.is_running:
             self.event()
-            self.update()
             self.draw()
-
-
-            self.clock.tick()
+            self.clock.tick(FPS)
             pg.display.flip()
 
 
 
-
-# Точка входа
+# Точка входа в программу
 if __name__ == "__main__":
     # Запускаем игру
-    Game()
+    game = Game()
+
+
