@@ -79,7 +79,7 @@ class Player(pg.sprite.Sprite):
         # Атака
         self.attack_right = load_image(f"images/{self.folder}/attack.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
         self.attack_left = pg.transform.flip(self.attack_right, True, False)
-        # Атака
+        # Зарядка
         self.charge_right = load_image(f"images/{self.folder}/charge.png", CHARACTER_WIDTH, CHARACTER_HEIGHT)
         self.charge_left = pg.transform.flip(self.charge_right, True, False)
 
@@ -105,8 +105,6 @@ class Player(pg.sprite.Sprite):
 
         if self.attack_mode and self.charge_power > 0:
             # создаем объект фаерболл и добавялем его в группу спрайтов
-            fireball_position = self.rect.topright if self.side == "right" else self.rect.topleft
-            self.magic_balls.add(MagicBall(fireball_position, self.side, self.charge_power, self.folder))
 
             self.charge_power = 0
             self.charge_mode = False
@@ -126,12 +124,12 @@ class Player(pg.sprite.Sprite):
             direction = 1
             self.side = "right"
 
-        self.handle_attack_mode()
+        # self.handle_attack_mode()
         self.handle_movement(direction, keys)
         self.handle_animation()
 
 
-    def handle_attack_mode(self):
+    # def handle_attack_mode(self):
         if self.attack_mode:
             if pg.time.get_ticks() - self.timer > self.attack_interval:
                 self.attack_mode = False
@@ -142,19 +140,22 @@ class Player(pg.sprite.Sprite):
             return
 
         if direction != 0:
-            self.animation_mode = True  #
+            self.animation_mode = True 
             self.charge_mode = False
             self.rect.x += direction
             self.current_animation = self.move_animation_left if direction == -1 else self.move_animation_right
+
         elif keys[self.key_down]:
             self.down_mode = True
             self.animation_mode = False
             self.charge_mode = False
             self.image = self.down_right if self.side == "right" else self.down_left
+            
         elif keys[self.key_charge]:
             self.animation_mode = False
             self.image = self.charge_right if self.side == "right" else self.charge_left
             self.charge_mode = True
+            
         else:
             self.down_mode = False
             self.animation_mode = True
