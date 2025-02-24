@@ -163,10 +163,10 @@ class Enemy(pg.sprite.Sprite):
                 self.animation_mode = True
                 self.current_animation = self.idle_animation_left if self.side == "left" else self.idle_animation_right
 
-        # if self.rect.right >= SCREEN_WIDTH:
-        #     self.rect.right = SCREEN_WIDTH
-        # elif self.rect.left <= 0:
-        #     self.rect.left = 0
+        if self.rect.right >= SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+        elif self.rect.left <= 0:
+            self.rect.left = 0
 
 
     def update(self, player):

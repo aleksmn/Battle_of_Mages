@@ -1,3 +1,4 @@
+# MagicBall
 import random
 import pygame as pg
 
@@ -21,6 +22,33 @@ def load_image(file, width, height):
 
 def text_render(text):
     return font.render(str(text), True, "black")
+
+
+class MagicBall(pg.sprite.Sprite):
+    def __init__(self, coord, side, power, folder):
+        super().__init__()
+
+        self.side = side
+        self.power = power / 2
+
+        self.image = load_image(f"images/{folder}/magicball.png", 200, 150)
+        if self.side == "right":
+            self.image = pg.transform.flip(self.image, True, False)
+
+        self.rect = self.image.get_rect()
+
+        self.rect.center = coord[0], coord[1] + 120
+
+
+    def update(self):
+        if self.side == "right":
+            self.rect.x += 4
+            if self.rect.left >= SCREEN_WIDTH:
+                self.kill()
+        else:
+            self.rect.x -= 4
+            if self.rect.right <= 0:
+                self.kill()
 
 
 
@@ -83,10 +111,10 @@ class Player(pg.sprite.Sprite):
 
 
 
-    def handle_animation(self):
+    def handle_animation(self): 
 
         if not self.charge_mode and self.charge_power > 0:
-            self.attack_mode = True        
+            self.attack_mode = True     
 
         if self.animation_mode and not self.attack_mode:
             if pg.time.get_ticks() - self.timer > self.interval:
@@ -97,18 +125,22 @@ class Player(pg.sprite.Sprite):
                 self.timer = pg.time.get_ticks()
 
         if self.charge_mode:
-            self.charge_power += 1       
+            self.charge_power += 1  
+            print(self.charge_power)     
             if self.charge_power == 100:
                 self.attack_mode = True
 
         if self.attack_mode and self.charge_power > 0:
             # создаем объект фаерболл и добавялем его в группу спрайтов
+            
+            fireball_position = self.rect.topright if self.side == "right" else self.rect.topleft
+
+            self.magic_balls.add(MagicBall(fireball_position, self.side, self.charge_power, self.folder))
 
             self.charge_power = 0
             self.charge_mode = False
             self.image = self.attack_left if self.side == "left" else self.attack_right
             self.timer = pg.time.get_ticks()
-
 
 
     def update(self):
@@ -125,13 +157,15 @@ class Player(pg.sprite.Sprite):
         # self.handle_attack_mode()
         self.handle_movement(direction, keys)
         self.handle_animation()
+        self.handle_attack_mode()
 
 
-    # def handle_attack_mode(self):
+    def handle_attack_mode(self):
         if self.attack_mode:
             if pg.time.get_ticks() - self.timer > self.attack_interval:
                 self.attack_mode = False
                 self.timer = pg.time.get_ticks()
+
 
     def handle_movement(self, direction, keys):
         if self.attack_mode:
@@ -198,6 +232,8 @@ class Game:
 
         self.screen.blit(self.player.image, self.player.rect)
 
+        self.player.magic_balls.draw(self.screen)
+
 
 
         self.screen.blit(self.foreground, (0, 0))
@@ -206,6 +242,8 @@ class Game:
 
 
         self.player.update()
+
+        self.player.magic_balls.update()
 
 
 
